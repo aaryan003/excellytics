@@ -1,86 +1,78 @@
-import { useState } from "react";
+// src/pages/Login.jsx
+import React, { useState } from "react";
+import { Button, Label, Card, Input } from "../components/ui";
+import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar";
-
-const Login = ({ setIsAuthenticated }) => {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+import authService from "@/services/authSerivce";
+const Login = () => {
+  const [email, setEmail] = useState("");
   const [error, setError] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Basic validation
-    if (!formData.email || !formData.password) {
-      setError("Please fill in all fields");
-      return;
-    }
-
-    if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      setError("Please enter a valid email address");
-      return;
-    }
-
     try {
-      // Simulated API call - replace with actual backend integration
-      const response = await new Promise((resolve) =>
-        setTimeout(() => resolve({ success: true }), 1000)
-      );
-
-      if (response.success) {
-        setIsAuthenticated(true);
-        navigate("/");
+      const data = await authService.login(email, password);
+      console.log("Data from login", data)
+      if (data && data.message === "Login successful") {
+        const { role } = data.userData;
+        console.log("Role", data.userData)
+        if (role === "user") {
+          navigate("/");
+        } else if (role === "admin") {
+          navigate("/");
+        }
       }
-    } catch (err) {
-      setError("Invalid email or password");
+    } catch (error) {
+      setError("Invalid credentials. Please try again.", error);
     }
   };
 
   return (
-    <div className="login-page">
-      <Navbar />
-      <div className="login-container">
-        <h2>Login to Excellytics</h2>
-        {error && <div className="error-message">{error}</div>}
-
+    <div className="flex justify-center items-center h-screen bg-gray-100">
+      <Card className="p-6 max-w-md w-full">
+        <h2 className="text-xl font-semibold text-center">Login</h2>
+        <p className="text-sm  mb-4 text-center text-slate-500">
+          Explore wide range of courses
+        </p>
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Email Address</label>
-            <input
+          <div className="mb-4">
+            <Label htmlFor="email">Email: </Label>
+            <Input
+              placeholder="Enter Your Email"
+              id="email"
               type="email"
-              value={formData.email}
-              onChange={(e) => {
-                setFormData({ ...formData, email: e.target.value });
-                setError("");
-              }}
-              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
+              className="mt-2"
             />
           </div>
-
-          <div className="form-group">
-            <label>Password</label>
-            <input
+          <div className="mb-6">
+            <Label htmlFor="password">Password: </Label>
+            <Input
+              placeholder="Enter Your Password"
+              id="password"
               type="password"
-              value={formData.password}
-              onChange={(e) => {
-                setFormData({ ...formData, password: e.target.value });
-                setError("");
-              }}
-              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
-              minLength="6"
+              className="mt-2"
             />
           </div>
-
-          <button type="submit" className="login-btn">
-            Sign In
-          </button>
+          <Button type="submit" className="w-full">
+            Login
+          </Button>
+          {error && <p className="text-red-500 text-center mt-4">{error}</p>}{" "}
+          <p className="mt-4 text-center text-gray-400">
+            Don't have an account?{" "}
+            <Link to="/signup" className="text-black hover:underline">
+              Signup
+            </Link>
+          </p>
         </form>
-      </div>
+      </Card>
     </div>
   );
 };

@@ -6,7 +6,7 @@ dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // middleware to authenticate the user by verfiying their JWT token
-function authenticateToken(req, res, next) {
+export function authenticateToken(req, res, next) {
   // Get token from the cookies
   const token = req.cookies.authToken;
 
@@ -27,7 +27,7 @@ function authenticateToken(req, res, next) {
 }
 
 // Middleware to authorize user by role, we need to pass the role in the middle
-function authorizeRole(roles = []) {
+export function authorizeRole(roles = []) {
   return (req, res, next) => {
     if (!roles.includes(req.user.role) || !req.user) {
       return res
@@ -37,5 +37,3 @@ function authorizeRole(roles = []) {
     next();
   };
 }
-
-export { authenticateToken, authorizeRole };

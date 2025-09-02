@@ -8,11 +8,25 @@ datasource db {
 }
 
 model User {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
-  name             String
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId 
+  name             String 
   role             String   // e.g., "user", "admin"
   organizationName String?
   email            String   @unique
   password         String
   createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  files            ExcelFile[]
+}
+
+model ExcelFile {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  filename    String
+  originalName String
+  fileType    String
+  fileSize    Int
+  filePath    String
+  uploadedAt  DateTime @default(now())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
 }

@@ -38,7 +38,7 @@ export async function register(req, res) {
 }
 export async function login(req, res) {
   const { email, password } = req.body;
-
+  
   // Find user by email
   const user = await prisma.user.findUnique({
     where: { email },
@@ -69,8 +69,16 @@ export async function login(req, res) {
     maxAge: oneDay, // Token expiration (1 hour)
     sameSite: "Strict", // Protect against CSRF attacks
   });
-  return res.status(200).json({ message: "Login successful" });
-}
+  return res.status(200).json({ 
+    message: "Login successful",
+    userData: {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      name: user.name,
+      organizationName: user.organizationName
+    }
+  });}
 
 export async function user(req, res) {
   try {
@@ -84,4 +92,27 @@ export async function user(req, res) {
 export function logout(req, res) {
   res.clearCookie("authToken", { httpOnly: true, sameSite: "Strict" });
   res.status(200).json({ message: "Logout succesful" });
+}
+
+export async function getCurrentUser(req, res) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: req.user.userId,
+      },
+    });
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+    return res.status(200).json({
+      message: "User Data fetched successfully",
+      role: user.role,
+    });
+  } catch (error) {
+      return res.status(500).json({
+        message: "Error fetching user data"
+      })
+  }
 }
