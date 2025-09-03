@@ -8,25 +8,42 @@ datasource db {
 }
 
 model User {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId 
-  name             String 
-  role             String   // e.g., "user", "admin"
+  id               String      @id @default(auto()) @map("_id") @db.ObjectId
+  name             String
+  role             String // e.g., "user", "admin"
   organizationName String?
-  email            String   @unique
+  email            String      @unique
   password         String
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
   files            ExcelFile[]
 }
 
 model ExcelFile {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  filename    String
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  filename     String
   originalName String
-  fileType    String
-  fileSize    Int
-  filePath    String
-  uploadedAt  DateTime @default(now())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
+  fileType     String
+  fileSize     Int
+  filePath     String
+  uploadedAt   DateTime   @default(now())
+  totalRows    Int?       // New: Store total rows across all sheets
+  totalColumns Int?       // New: Store max columns from any sheet
+  userId       String     @db.ObjectId
+  user         User       @relation(fields: [userId], references: [id])
+  sheets       SheetData[] // Changed: A file can have multiple sheets
+}
+
+// Renamed from FileData for clarity
+model SheetData {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  name         String    // New: The name of the Excel sheet
+  headers      String[]  // New: The detected column headers
+  columnTypes  String[]  // New: The detected column types ('string', 'number', 'date')
+  rowCount     Int       // New: Row count for this specific sheet
+  columnCount  Int       // New: Column count for this specific sheet
+  jsonData     Json      // Stores the actual data rows
+  fileId       String    @db.ObjectId
+  excelFile    ExcelFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
 }
